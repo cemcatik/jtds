@@ -58,7 +58,7 @@ import net.sourceforge.jtds.util.Logger;
  * @author     Alin Sinpalean
  * @author     The FreeTDS project
  * @created    March 16, 2001
- * @version    $Id: TdsConnection.java,v 1.21 2004-03-28 18:35:15 bheineman Exp $
+ * @version    $Id: TdsConnection.java,v 1.20 2004-03-14 16:07:03 alin_sinpalean Exp $
  * @see        Statement
  * @see        ResultSet
  * @see        DatabaseMetaData
@@ -77,10 +77,9 @@ public class TdsConnection implements Connection
 
     private final Vector tdsPool = new Vector();
     private DatabaseMetaData databaseMetaData = null;
-    private ArrayList savepoints = null;
 
     private boolean autoCommit = true;
-    private int transactionIsolationLevel = Connection.TRANSACTION_READ_COMMITTED;
+    private int transactionIsolationLevel = java.sql.Connection.TRANSACTION_READ_COMMITTED;
     private boolean isClosed = false;
     /**
      * If set, only return the last update count. For example, if set update
@@ -121,7 +120,7 @@ public class TdsConnection implements Connection
     /**
      * CVS revision of the file.
      */
-    public final static String cvsVersion = "$Id: TdsConnection.java,v 1.21 2004-03-28 18:35:15 bheineman Exp $";
+    public final static String cvsVersion = "$Id: TdsConnection.java,v 1.20 2004-03-14 16:07:03 alin_sinpalean Exp $";
 
     /**
      * Create a <code>Connection</code> to a database server.
@@ -567,7 +566,7 @@ public class TdsConnection implements Connection
      * @return                   a new Statement object
      * @exception  SQLException  passed through from the constructor
      */
-    public synchronized Statement createStatement() throws SQLException {
+    public synchronized java.sql.Statement createStatement() throws SQLException {
         checkClosed();
         return new TdsStatement(this);
     }
@@ -593,7 +592,7 @@ public class TdsConnection implements Connection
      *      pre-compiled statement
      * @exception SQLException if a database-access error occurs.
      */
-    public PreparedStatement prepareStatement(String sql)
+    public java.sql.PreparedStatement prepareStatement(String sql)
             throws SQLException {
         // No need for synchronized here, prepareStatement(String, int, int) is
         // synchronized
@@ -622,7 +621,7 @@ public class TdsConnection implements Connection
      *     pre-compiled SQL statement
      * @exception SQLException if a database access error occurs
      */
-    public CallableStatement prepareCall(String sql) throws SQLException {
+    public java.sql.CallableStatement prepareCall(String sql) throws SQLException {
         // No need for synchronized here, prepareCall(String, int, int) is
         // synchronized
         return prepareCall(sql,
@@ -767,7 +766,7 @@ public class TdsConnection implements Connection
      * @return            a new Statement object
      * @exception SQLException if a database access error occurs
      */
-    public synchronized Statement createStatement(int type, int concurrency)
+    public synchronized java.sql.Statement createStatement(int type, int concurrency)
             throws SQLException {
         checkClosed();
         return new TdsStatement(this, type, concurrency);
@@ -787,7 +786,7 @@ public class TdsConnection implements Connection
      *     the pre-compiled SQL statement
      * @exception SQLException     if a database access error occurs
      */
-    public synchronized PreparedStatement prepareStatement(
+    public synchronized java.sql.PreparedStatement prepareStatement(
             String sql,
             int resultSetType,
             int resultSetConcurrency)
@@ -811,7 +810,7 @@ public class TdsConnection implements Connection
      *     the pre-compiled SQL statement
      * @exception SQLException     if a database access error occurs
      */
-    public synchronized CallableStatement prepareCall(
+    public synchronized java.sql.CallableStatement prepareCall(
             String sql,
             int resultSetType,
             int resultSetConcurrency) throws SQLException {
@@ -820,14 +819,14 @@ public class TdsConnection implements Connection
                 this, sql, resultSetType, resultSetConcurrency);
     }
 
-    private void NotImplemented(String method) throws SQLException {
-        throw new SQLException(
+    private void NotImplemented(String method) throws java.sql.SQLException {
+        throw new java.sql.SQLException(
                 "Method not Implemented: Connection." + method, "HY000");
     }
 
     private void checkClosed() throws SQLException {
         if (isClosed) {
-            throw new SQLException("Connection closed", "HY000");
+            throw new java.sql.SQLException("Connection closed", "HY000");
         }
     }
 
@@ -839,7 +838,7 @@ public class TdsConnection implements Connection
      * @return    A Tds instance to use for database communications.
      * @exception SQLException
      */
-    synchronized Tds allocateTds(boolean mainTds) throws SQLException {
+    synchronized Tds allocateTds(boolean mainTds) throws java.sql.SQLException {
         Tds result;
         int i;
 
@@ -939,7 +938,6 @@ public class TdsConnection implements Connection
         //      with TdsStatement
         synchronized (mainTdsMonitor) {
             Tds tds = allocateTds(true);
-
             try {
                 if (commit) {
                     tds.commit();
@@ -955,28 +953,26 @@ public class TdsConnection implements Connection
                     warningChain.addException(
                             new SQLException(ex.getMessage()));
                 }
-
-                clearSavepoints();
             }
         }
 
         warningChain.checkForExceptions();
     }
 
-    public Statement createStatement(int param, int param1, int param2)
-            throws SQLException {
+    public java.sql.Statement createStatement(int param, int param1, int param2)
+            throws java.sql.SQLException {
         NotImplemented("createStatement");
         return null;
     }
 
-    public int getHoldability() throws SQLException {
+    public int getHoldability() throws java.sql.SQLException {
         NotImplemented("getHoldability");
         return 0;
     }
 
-    public CallableStatement prepareCall(
+    public java.sql.CallableStatement prepareCall(
             String str, int param, int param2, int param3)
-            throws SQLException {
+            throws java.sql.SQLException {
         NotImplemented("prepareCall(String, int, int, int)");
         return null;
     }
@@ -1041,132 +1037,34 @@ public class TdsConnection implements Connection
         return prepareStatement(sql, TdsStatement.RETURN_GENERATED_KEYS);
     }
 
-    public PreparedStatement prepareStatement(
+    public java.sql.PreparedStatement prepareStatement(
             String str, int param, int param2, int param3)
-            throws SQLException {
+            throws java.sql.SQLException {
         NotImplemented("prepareStatement(String, int, int, int)");
         return null;
     }
 
-    public void setHoldability(int param) throws SQLException {
+    public void releaseSavepoint(java.sql.Savepoint savepoint)
+            throws java.sql.SQLException {
+        NotImplemented("releaseSavepoint");
+    }
+
+    public void rollback(java.sql.Savepoint savepoint) throws java.sql.SQLException {
+        NotImplemented("rollBack(java.sql.Savepoint)");
+    }
+
+    public void setHoldability(int param) throws java.sql.SQLException {
         NotImplemented("setHoldability");
     }
 
-    public synchronized void releaseSavepoint(Savepoint savepoint)
-            throws SQLException {
-        checkClosed();
-
-        if (savepoints == null) {
-            throw new SQLException("savepoint is not valid for this transaction");
-        }
-
-        int index = savepoints.indexOf(savepoint);
-
-        if (index == -1) {
-            throw new SQLException("savepoint is not valid for this transaction");
-        }
-
-        savepoints.remove(index);
-
-        if (savepoint instanceof SavepointImpl) {
-            ((SavepointImpl) savepoint).release();
-        }
+    public java.sql.Savepoint setSavepoint() throws java.sql.SQLException {
+        NotImplemented("setSavePoint");
+        return null;
     }
 
-    public synchronized void rollback(Savepoint savepoint) throws SQLException {
-        checkClosed();
-
-        if (savepoints == null) {
-            throw new SQLException("savepoint is not valid for this transaction");
-        }
-
-        int index = savepoints.indexOf(savepoint);
-
-        if (index == -1) {
-            throw new SQLException("savepoint is not valid for this transaction");
-        } else if (getAutoCommit()) {
-            throw new SQLException("savepoints cannot be rolled back in auto-commit mode");
-        }
-
-        Statement statement = null;
-         
-        try {
-            statement = createStatement();
-            statement.execute("ROLLBACK TRANSACTION s" + ((SavepointImpl) savepoint).getId());
-        } finally {
-            statement.close();
-        }
-
-        int size = savepoints.size();
-
-        for (int i = size - 1; i >= index; i--) {
-            savepoints.remove(i);
-        }
-    }
-
-    public synchronized Savepoint setSavepoint() throws SQLException {
-        checkClosed();
-
-        if (getAutoCommit()) {
-            throw new SQLException("savepoints cannot be set in auto-commit mode");
-        }
-
-        if (savepoints == null) {
-            savepoints = new ArrayList();
-        }
-
-        SavepointImpl savepoint = new SavepointImpl(savepoints.size() + 1);
-
-        setSavepoint(savepoint);
-
-        return savepoint;
-    }
-
-    public synchronized Savepoint setSavepoint(String name) throws SQLException {
-        checkClosed();
-
-        if (getAutoCommit()) {
-            throw new SQLException("savepoints cannot be set in auto-commit mode");
-        } else if (name == null) {
-            throw new SQLException("savepoint name cannot be null");
-        }
-
-        if (savepoints == null) {
-            savepoints = new ArrayList();
-        }
-
-        SavepointImpl savepoint = new SavepointImpl(savepoints.size() + 1, name);
-
-        setSavepoint(savepoint);
-
-        return savepoint;
-    }
-
-    private void setSavepoint(SavepointImpl savepoint) throws SQLException {
-        Statement statement = null;
-         
-        try {
-            statement = createStatement();
-            statement.execute("SAVE TRANSACTION s" + savepoint.getId());
-        } finally {
-            statement.close();
-        }
-
-        savepoints.add(savepoint);
-    }
-
-    private synchronized void clearSavepoints() {
-        if (savepoints == null) {
-            return;
-        }
-
-        for (Iterator iterator = savepoints.iterator(); iterator.hasNext();) {
-            SavepointImpl savepoint = (SavepointImpl) iterator.next();
-
-            savepoint.release();
-        }
-
-        savepoints.clear();
+    public java.sql.Savepoint setSavepoint(String str) throws java.sql.SQLException {
+        NotImplemented("setSavePoint(String)");
+        return null;
     }
 
     protected void setCharset(String charset) {
